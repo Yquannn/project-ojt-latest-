@@ -1,8 +1,8 @@
 import { createPlayerAnimations } from "./animation/playerAnimation.js";
 import findShortestPath from "../imports/controllers/pathFindings.js";
 import { Vec2 } from './controllers/linAlg.js';
-import HandlePlayerMovement from './controllers/handleAutomatedMovement.js';
 import createUI from './utils/createUi.js';
+import { createFarmingButton } from "./utils/createUi.js";
 
 class MyGame extends Phaser.Scene {
   constructor() {
@@ -19,6 +19,8 @@ class MyGame extends Phaser.Scene {
     this.isAutomated = false;
     this.trees = []; // To hold references to tree objects
     this.isFarming = false; // Farming flag
+    this.colledtedLogs = 0
+    this.coins = 0
   }
 
   preload() {
@@ -42,7 +44,7 @@ class MyGame extends Phaser.Scene {
 
   create() {
     this.input.setDefaultCursor('url(assets/cursor_01.png), pointer'); // Set custom cursor
-    createUI(this);
+
     this.trees = this.add.group();
     const baseScale = 1;
     const tilePixelSize = this.tileSize;
@@ -68,7 +70,7 @@ class MyGame extends Phaser.Scene {
     this.background = this.add.image(gameWidth / 2, gameHeight / 2, "background");
     this.background.setOrigin(0.5, 0.5);
     this.background.setScale(gameWidth / this.background.width, gameHeight / this.background.height);
-    
+
     createPlayerAnimations(this); // Initialize animations
 
     // Prepare collision and starting areas
@@ -79,6 +81,9 @@ class MyGame extends Phaser.Scene {
     for (let i = 0; i < PlayerStartingPosition.length; i += rowLength) {
       beginningArea.push(PlayerStartingPosition.slice(i, i + rowLength));
     }
+    const centerX = (rowLength * tilePixelSize) / 2;
+    const centerY = (beginningArea.length * tilePixelSize) / 2;
+    this.player = this.physics.add.sprite(centerX, centerY, "player");
 
     for (let i = 0; i < collision.length; i += rowLength) {
       collisionMap.push(collision.slice(i, i + rowLength));
@@ -88,9 +93,7 @@ class MyGame extends Phaser.Scene {
     this.createObstacles(collisionMap);
 
     // Player setup at the center
-    const centerX = (rowLength * tilePixelSize) / 2;
-    const centerY = (beginningArea.length * tilePixelSize) / 2;
-    this.player = this.physics.add.sprite(centerX, centerY, "player");
+
 
     this.player.setSize(this.tileSize, this.tileSize);
     this.player.setOffset(10, 0);
@@ -197,53 +200,7 @@ class MyGame extends Phaser.Scene {
     });
 
     // Start Farming button
-    const button = document.createElement("button");
-    button.innerText = "Start Farming";
-    button.style.position = "absolute";
-    button.style.top = "10px";
-    button.style.left = "10px";
-    button.style.padding = "10px 15px";
-    button.style.fontSize = "16px";
-    button.style.backgroundColor = "#000";
-    button.style.color = "#fff";
-    button.style.border = "none";
-    button.style.cursor = "pointer";
-    button.style.zIndex = "1000";
-    document.body.appendChild(button);
-    
-    button.addEventListener("click", () => {
-      if (this.isAutomated) {
-        console.log("Farming stopped!");
-        this.isAutomated = false;
-        button.innerText = "Start Farming";
-        this.moveToTree();
-
-      } else {
-        // if(Distance < 5){
-        //   console.log("Please go to the farming area")
-        // }else{
-        console.log("Farming started!");
-        this.isAutomated = true;
-        button.innerText = "Stop Farming";
-        // }
-
-      }
-    });
-    
-
-    // Helper function to find the nearest tree
-    // this.findNearestTree = function () {
-    //   let nearestTree = null;
-    //   let minDistance = Number.MAX_VALUE;
-    //   this.trees.forEach((tree) => {
-    //     const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, tree.x, tree.y);
-    //     if (distance < minDistance) {
-    //       minDistance = distance;
-    //       nearestTree = tree;
-    //     }
-    //   });
-    //   return nearestTree;
-    // };
+    createFarmingButton(this)
 
     this.findNearestTree = function () {
       if (this.trees.length === 0) return null;
@@ -260,6 +217,9 @@ class MyGame extends Phaser.Scene {
   
       return nearestTree;
     }
+
+    createUI(this); // Call UI creation function
+
 
 
   }
@@ -292,38 +252,6 @@ class MyGame extends Phaser.Scene {
       });
     });
   }
-
-  // chopTree(player, tree) {
-  //   // Check if player is near the tree and not already chopping
-  //   const distance = Phaser.Math.Distance.Between(player.x, player.y, tree.x, tree.y);
-  //   if (distance > 20 || this.chopping) return; // Player must be close enough and not already chopping
-  
-  //   this.chopping = true;
-  //   this.choppingTree = tree;
-  
-  //   console.log("Started chopping the tree!");
-  //   const chopDuration = 3000; // 3 seconds
-  
-  //   // Create a progress text above the tree
-  //   const progressText = this.add.text(tree.x, tree.y - 20, "Chopping...", {
-  //     fontSize: "16px",
-  //     color: "#ffffff",
-  //   });
-  
-  //   // Set a timer to remove the tree after the chop duration
-  //   this.time.delayedCall(chopDuration, () => {
-  //     console.log("Tree chopped down!");
-  //     this.chopping = false;
-  //     this.choppingTree = null;
-  
-  //     tree.destroy();
-  //     progressText.destroy();
-  
-  //     console.log("Resources collected!");
-  
-  //     this.moveToTree();
-  //   });
-  // }
 
 
   moveToTree(treeX, treeY) {
@@ -394,6 +322,12 @@ class MyGame extends Phaser.Scene {
     if (index > -1) {
       this.trees.splice(index, 1); // Remove the chopped tree from the array
       tree.destroy(); // Remove tree from the scene
+      this.logCollectable += 1
+
+      if (this.speed >= 10) {
+        this.speed -= 2
+      }
+      console.log(this.logCollectable)
     }
 
     // After chopping, find and move to the nearest tree
@@ -404,18 +338,21 @@ class MyGame extends Phaser.Scene {
   }
   
   update() {
-    // if (this.isAutomated) {
-    //   HandlePlayerMovement(this);
-    // }
-  
-    if (this.input.keyboard.checkDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A), 100)) {
-      this.cameras.main.zoom += 0.1; // Zoom in
-    }
-    if (this.input.keyboard.checkDown(this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D), 100)) {
-      this.cameras.main.zoom -= 0.1; // Zoom out
-    }
-    this.cameras.main.zoom = Phaser.Math.Clamp(this.cameras.main.zoom, 0.5, 3);
-  
+
+// In the 'create' method or scene setup
+this.zoomInKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A); // Zoom in
+this.zoomOutKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D); // Zoom out
+
+if (this.input.keyboard.checkDown(this.zoomInKey, 100)) {
+  this.cameras.main.zoom += 0.1; // Zoom in
+}
+if (this.input.keyboard.checkDown(this.zoomOutKey, 100)) {
+  this.cameras.main.zoom -= 0.1; // Zoom out
+}
+
+// Always clamp zoom to prevent extreme values
+this.cameras.main.zoom = Phaser.Math.Clamp(this.cameras.main.zoom, 0.5, 3);
+
     // Handle movement
     if (this.isMoving) {
       const targetPoint = this.path[this.currentPathIndex];
@@ -429,8 +366,7 @@ class MyGame extends Phaser.Scene {
           this.isMoving = false;
           this.player.setVelocity(0, 0); // Stop movement
           console.log("Arrived at the destination!");
-          // After reaching the tree, start chopping if near the tree
-          // this.chopTree(this.player, this.findNearestTree());
+
         }
       } else {
         const angle = Phaser.Math.Angle.Between(this.player.x, this.player.y, targetX, targetY);
@@ -456,18 +392,6 @@ class MyGame extends Phaser.Scene {
         }
       }
     }
-
-  
-    // Automated movement check (if `isAutomated` is true)
-    // if (this.isAutomated) {
-    //   const nearestTree = this.findNearestTree();
-    //   if (nearestTree) {
-    //     const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, nearestTree.x, nearestTree.y);
-    //     if (distance <= 40 && !this.chopping) {
-    //       this.chopTree(this.player, nearestTree);
-    //     }
-    //   }
-    // }
   }
   
   
