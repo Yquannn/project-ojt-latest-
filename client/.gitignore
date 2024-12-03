@@ -1,0 +1,60 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore all .env files
+.env
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore build artifacts
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.o
+*.out
+*.a
+*.bin
+
+# Ignore Git Large File Storage files (if not using LFS)
+*.lfs
+
+# Ignore IDE/Editor files
+.vscode/
+.idea/
+*.iml
+
+# Ignore temporary/system files
+*.tmp
+*.swp
+*.bak
+*.old
+*.orig
+
+# Ignore archives
+*.zip
+*.tar.gz
+*.rar
+
+# Ignore large binary files (add extensions if needed)
+*.mp4
+*.mp3
+*.png
+*.jpg
+*.gif
+*.pdf
+
+# Ignore coverage/testing files
+coverage/
+*.lcov
+
+# Ignore package manager lock files (optional, if you don't want them in your repo)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

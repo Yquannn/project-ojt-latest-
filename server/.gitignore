@@ -1,0 +1,69 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore log files
+*.log
+logs/
+
+# Ignore all .env files
+.env
+.env.*
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore database files
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+
+# Ignore build artifacts
+dist/
+build/
+coverage/
+public/
+tmp/
+temp/
+
+# Ignore debug files
+*.pid
+*.seed
+*.pid.lock
+
+# Ignore IDE/Editor files
+.vscode/
+.idea/
+*.iml
+
+# Ignore package manager lock files (if not needed in the repo)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Ignore archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Ignore OS temporary files
+*.swp
+*.bak
+*.tmp
+*.old
+*.orig
+
+# Ignore test coverage files
+coverage/
+*.lcov
+
+# Ignore security-related files (if applicable)
+certs/
+keys/
+*.key
+*.crt
+
+# Ignore miscellaneous files
+*.log.*
+*.cache
